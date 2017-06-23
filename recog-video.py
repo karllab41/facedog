@@ -4,6 +4,7 @@ import dlib
 from skimage import io
 import cv2
 import numpy as np
+import sys
 
 try:
     import face_recognition_models
@@ -185,14 +186,21 @@ def compare_faces(known_face_encodings, face_encoding_to_check, tolerance=0.6):
     """
     return list(face_distance(known_face_encodings, face_encoding_to_check) <= tolerance)
 
+# To use a file, instead of camera number (e.g., 0 in this case), use a file path, e.g. "anything.mp4"
 camera = cv2.VideoCapture(0)
+# camera = cv2.VideoCapture('/Users/kni/Code/FaceDog/terminator.mp4')
 
 list_face_locations = []
 list_face_encodings = []
 list_face_names = []
 
+every = 5
 while True:
-    ret, img = camera.read()    
+
+    for x in range(every):
+        ret, img = camera.read()    
+    img = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
+
     # The 1 in the second argument indicates that we should upsample the image
     # 1 time.  This will make everything bigger and allow us to detect more
     # faces.
@@ -200,7 +208,6 @@ while True:
 
     list_face_locations = face_locations(img)
     list_face_encodings = face_encodings(img,list_face_locations)
-
     list_face_names = []
 
     for face_encoding in list_face_encodings:
@@ -217,11 +224,10 @@ while True:
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(img,name,(left+6,bottom-6),font,1.0,(255,255,255),1)
 
-        cv2.imshow('detections',img)
+    cv2.imshow('detections',img)
 
-
-        if cv2.waitKey(5) & 0x00 == ord('q'):
-            break
+    if cv2.waitKey(5) & 0x00 == ord('q'):
+        break
 
 video_capture.release()
 cv2.destroyAllWindows()
